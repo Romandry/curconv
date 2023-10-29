@@ -3,13 +3,16 @@ package ua.transkyy.curconv.service;
 import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 import ua.transkyy.curconv.model.Exchange;
+import ua.transkyy.curconv.model.ExchangeParams;
 
 @Service
 public class ApiService {
-    private final String BASE_URL = "http://api.exchangerate.host/convert";
+    private final String BASE_URL = "http://api.exchangerate.host";
     private final WebClient webClient;
 
     @Autowired
@@ -18,16 +21,17 @@ public class ApiService {
     }
 
     public Mono<Exchange> fetchDataWithParams(
-            String currencyFrom,
-            String currencyTo,
-            BigDecimal amount,
+            ExchangeParams exchangeParams,
             String apiAccessKey
     ) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("/convert");
+        builder.queryParam("from", exchangeParams.from());
+        builder.queryParam("to", exchangeParams.to());
+        builder.queryParam("amount", exchangeParams.amount());
+        builder.queryParam("access_key", apiAccessKey);
+
         return webClient.get()
-                .uri(
-                        "?from={currencyFrom}&to={currencyTo}&amount={amount}&access_key={apiAccessKey}",
-                        currencyFrom, currencyTo, amount, apiAccessKey
-                )
+                .uri(builder.toUriString())
                 .retrieve()
                 .bodyToMono(Exchange.class);
     }

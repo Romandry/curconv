@@ -11,11 +11,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Mono;
@@ -24,6 +27,7 @@ import ua.transkyy.curconv.service.ApiService;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
+@AutoConfigureWebTestClient
 class CurrencyControllerTest {
 
 //    private final String apiAccessKey = "83da015792132e39cf61afcfda1aa4f2";
