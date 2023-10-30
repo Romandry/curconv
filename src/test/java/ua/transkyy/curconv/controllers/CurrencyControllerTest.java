@@ -1,105 +1,59 @@
 package ua.transkyy.curconv.controllers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.util.Objects;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.client.RestTemplate;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 import ua.transkyy.curconv.model.Exchange;
+import ua.transkyy.curconv.model.ExchangeParams;
 import ua.transkyy.curconv.service.ApiService;
 
-@SpringBootTest
-@TestPropertySource(locations = "classpath:application-test.properties")
-@AutoConfigureWebTestClient
-class CurrencyControllerTest {
+@RunWith(MockitoJUnitRunner.class)
+public class CurrencyControllerTest {
 
-//    private final String apiAccessKey = "83da015792132e39cf61afcfda1aa4f2";
-//
-//    @Autowired
-//    private WebTestClient webTestClient;
-//
-//    @MockBean
-//    private ApiService apiService;
-//
-//    @Test
-//    public void testExchange() {
-//
-//        String apiUrl = "http://localhost:8333/convert?from=EUR&to=USD&amount=100";
-//
-//        Exchange mockExchange = new Exchange();
-//        mockExchange.setSuccess(true);
-//        mockExchange.setResult(BigDecimal.valueOf(105.6145));
-//
-//        when(apiService.fetchDataWithParams(
-//                "USD",
-//                "EUR",
-//                BigDecimal.valueOf(100),
-//                apiAccessKey
-//        )).thenReturn(Mono.just(mockExchange));
-//
-//        webTestClient.get()
-//                .uri(apiUrl)
-//                .exchange()
-//                .expectStatus().isOk()
-//                .expectBody()
-//                .jsonPath("success").isEqualTo(true)
-//                .jsonPath("result").isEqualTo(102);
-//
-//
-////        webTestClient.get()
-////                .
-//    }
+    @Value("${api.access_key}")
+    private String apiAccessKey;
 
+    @Mock
+    private ApiService apiServiceMock;
 
-//    private CurrencyController currencyController;
-//
-//    @Mock
-//    private RestTemplate restTemplate;
-//
-//    @BeforeEach
-//    public void init() {
-//
-//        MockitoAnnotations.openMocks(this);
-//        currencyController = new CurrencyController(restTemplate);
-//    }
-//
-//    @Test
-//    public void testExchange() {
-//        String apiUrl = "http://localhost:8333/convert?from=EUR&to=USD&amount=100";
-//
-//        Exchange exchangeResult = new Exchange();
-//        exchangeResult.setSuccess(true);
-//        exchangeResult.setResult(BigDecimal.valueOf(105.6145));
-//
-//        Mockito.when(restTemplate.getForEntity(apiUrl, Exchange.class))
-//                .thenReturn(new ResponseEntity<>(exchangeResult, HttpStatus.OK));
-//
-//        ResponseEntity<Exchange> result = currencyController.exchange(
-//                "USD",
-//                "EUR",
-//                BigDecimal.valueOf(100)
-//        );
-//
-//        assertEquals(HttpStatus.OK, result.getStatusCode());
-////        assertEquals(exchangeResult.getResult(), result.getBody().getResult());
-//        assertEquals(true, result.getBody().getSuccess());
-//
-//    }
+    @InjectMocks
+    private CurrencyController currencyController;
+
+    @Before
+    public void init() {
+        MockitoAnnotations.initMocks(this);
+        currencyController = new CurrencyController(apiServiceMock, apiAccessKey);
+    }
+
+    @Test
+    public void testExchange() {
+        //given
+        ExchangeParams params = new ExchangeParams("USD", "EUR", new BigDecimal("100"));
+        Exchange expectedExchange = new Exchange(true, new BigDecimal("2.000"));
+
+        //when
+        when(apiServiceMock.fetchDataWithParams(eq(params), eq(apiAccessKey)))
+                .thenReturn(Mono.just(expectedExchange));
+        Mono<Exchange> result = currencyController.exchange(params);
+
+        //then
+        verify(apiServiceMock).fetchDataWithParams(eq(params), eq(apiAccessKey));
+
+        Exchange actualExchange = result.block();
+        assertThat(actualExchange).isEqualToComparingFieldByFieldRecursively(expectedExchange);
+    }
+
 }

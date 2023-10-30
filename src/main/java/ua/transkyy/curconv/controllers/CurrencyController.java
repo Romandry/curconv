@@ -23,6 +23,11 @@ public class CurrencyController {
         this.apiService = apiService;
     }
 
+    public CurrencyController(ApiService apiService, String apiAccessKey) {
+        this.apiService = apiService;
+        this.apiAccessKey = apiAccessKey;
+    }
+
     @GetMapping("/convert")
     public Mono<Exchange> exchange(ExchangeParams params) {
         return apiService.fetchDataWithParams(params, apiAccessKey);
