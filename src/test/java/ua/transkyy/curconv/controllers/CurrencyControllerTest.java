@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +18,7 @@ import reactor.core.publisher.Mono;
 import ua.transkyy.curconv.model.Exchange;
 import ua.transkyy.curconv.model.ExchangeParams;
 import ua.transkyy.curconv.service.ApiService;
+import ua.transkyy.curconv.service.CurrencyHistoryService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CurrencyControllerTest {
@@ -29,13 +29,16 @@ public class CurrencyControllerTest {
     @Mock
     private ApiService apiServiceMock;
 
+    @Mock
+    private CurrencyHistoryService historyService;
+
     @InjectMocks
     private CurrencyController currencyController;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        currencyController = new CurrencyController(apiServiceMock, apiAccessKey);
+        currencyController = new CurrencyController(apiServiceMock, apiAccessKey, historyService);
     }
 
     @Test
